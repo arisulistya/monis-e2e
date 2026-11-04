@@ -1,0 +1,5 @@
+# Critical authentication and storefront checks. Login needs a dedicated account.
+auth/login.spec.ts > signs in with the dedicated account and signs out
+journey/storefront.spec.ts > browse a category and open a product
+journey/storefront.spec.ts > search shows a matching product and opens its details
+journey/storefront.spec.ts > add an item to the guest cart, retain it after reload, and clear it

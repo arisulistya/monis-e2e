@@ -1,0 +1,3 @@
+# Example selection; edit these entries for the current week's changes.
+auth/login.spec.ts > signs in with the dedicated account and signs out
+journey/storefront.spec.ts > search reports when there is no matching product

@@ -1,0 +1,17 @@
+node_modules/
+.agents/
+/MAIN-JOURNEYS.md
+/SELECTOR-MAP.md
+/TEST-REVIEW.md
+.DS_Store
+.env
+.env.*
+!.env.example
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+playwright/.auth/
+.auth/
+.local/
+*.log
