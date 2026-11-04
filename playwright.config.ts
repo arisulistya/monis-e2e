@@ -3,7 +3,7 @@ import { config } from 'dotenv';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-const privateDir = join(homedir(), 'Projects', 'monis-auth-e2e');
+const privateDir = join(homedir(), '.monis-e2e');
 const envFile = process.env.MONIS_ENV_FILE || join(privateDir, '.env');
 const loaded = config({ path: envFile, quiet: true });
 if (loaded.error) throw new Error(`Cannot read environment file: ${envFile}`, { cause: loaded.error });

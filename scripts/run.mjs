@@ -19,7 +19,7 @@ if (listOptions.length) {
   }
   await checkPlan(listOptions[0]);
 }
-const root = join(homedir(), 'Projects', 'monis-auth-e2e', 'allure-runs');
+const root = join(homedir(), '.monis-e2e', 'allure-runs');
 const run = join(root, `${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID()}`);
 const results = join(run, 'results');
 const report = join(run, 'report');

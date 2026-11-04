@@ -33,10 +33,10 @@ The default environment file points to production at `https://www.monis.rent/`. 
 2. Create a private environment file outside the repository. The guard preserves an existing file:
 
    ```sh
-   mkdir -p "$HOME/Projects/monis-auth-e2e"
-   if [ ! -e "$HOME/Projects/monis-auth-e2e/.env" ]; then
-     cp .env.example "$HOME/Projects/monis-auth-e2e/.env"
-     chmod 600 "$HOME/Projects/monis-auth-e2e/.env"
+   mkdir -p "$HOME/.monis-e2e"
+   if [ ! -e "$HOME/.monis-e2e/.env" ]; then
+     cp .env.example "$HOME/.monis-e2e/.env"
+     chmod 600 "$HOME/.monis-e2e/.env"
    fi
    ```
 
@@ -133,12 +133,13 @@ The run script validates planned entries against Playwright discovery. It reject
 
 ## Select an environment
 
-The default file is `~/Projects/monis-auth-e2e/.env`. To prepare staging without overwriting an existing file:
+The default file is `~/.monis-e2e/.env`. To prepare staging without overwriting an existing file:
 
 ```sh
-if [ ! -e "$HOME/Projects/monis-auth-e2e/.env.staging" ]; then
-  sed 's|^BASE_URL=.*|BASE_URL=|' .env.example > "$HOME/Projects/monis-auth-e2e/.env.staging"
-  chmod 600 "$HOME/Projects/monis-auth-e2e/.env.staging"
+mkdir -p "$HOME/.monis-e2e"
+if [ ! -e "$HOME/.monis-e2e/.env.staging" ]; then
+  sed 's|^BASE_URL=.*|BASE_URL=|' .env.example > "$HOME/.monis-e2e/.env.staging"
+  chmod 600 "$HOME/.monis-e2e/.env.staging"
 fi
 ```
 
@@ -149,8 +150,8 @@ Edit `.env.staging` and replace `BASE_URL` with the real staging URL before runn
 npm run test:smoke
 
 # Staging: explicitly select the staging file
-MONIS_ENV_FILE="$HOME/Projects/monis-auth-e2e/.env.staging" npm run test:smoke
-MONIS_ENV_FILE="$HOME/Projects/monis-auth-e2e/.env.staging" npm run test:headed
+MONIS_ENV_FILE="$HOME/.monis-e2e/.env.staging" npm run test:smoke
+MONIS_ENV_FILE="$HOME/.monis-e2e/.env.staging" npm run test:headed
 ```
 
 The selected file must exist and contain a valid `BASE_URL`. The run fails when the file or URL is missing; it does not fall back to production. Its `BASE_URL` and account values take precedence over values inherited from the shell. The shell can override `RUN_PRODUCTION_MUTATIONS` for one run. Allure records the target origin and selected plan.
@@ -172,7 +173,7 @@ A test skips when its required account or settings are missing. If the negative 
 
 ## Production side effects and cleanup
 
-With `RUN_PRODUCTION_MUTATIONS=1`, a full run can create two accounts and request a login email. The generated email addresses and target origins are appended to `~/Projects/monis-auth-e2e/.local/accounts-to-clean.txt` before signup, including when signup fails. The account owner must review and clean up the accounts manually. The suite does not delete accounts.
+With `RUN_PRODUCTION_MUTATIONS=1`, a full run can create two accounts and request a login email. The generated email addresses and target origins are appended to `~/.monis-e2e/.local/accounts-to-clean.txt` before signup, including when signup fails. The account owner must review and clean up the accounts manually. The suite does not delete accounts.
 
 Mailinator public inboxes can be read by anyone. A public login link can grant access to its test account. Use disposable accounts with no private data and do not reuse passwords. A site may reject disposable addresses. Google may present MFA, CAPTCHA, or another challenge; the suite does not bypass it.
 
@@ -186,7 +187,7 @@ Keep `.env` files, cleanup records, browser session state, screenshots, videos, 
 
 ## Reports and troubleshooting
 
-Each `npm test`, `test:smoke`, `test:weekly`, `test:regression`, `test:headed`, or `test:debug` run creates an Allure report under `~/Projects/monis-auth-e2e/allure-runs/`. `npm run report` opens the latest one. Reports are separate per run; cross-run trends are not configured.
+Each `npm test`, `test:smoke`, `test:weekly`, `test:regression`, `test:headed`, or `test:debug` run creates an Allure report under `~/.monis-e2e/allure-runs/`. `npm run report` opens the latest one. Reports are separate per run; cross-run trends are not configured.
 
 Executed tests with an open page capture a final screenshot. Failed tests retain a video and trace. Login and signup tests also capture signed-in and signed-out screenshots. Allure shows expected behavior, test steps, and an actual-behavior attachment. A skipped test or a failure before a page opens cannot provide a page screenshot or video.
 

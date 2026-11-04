@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { mkdtempSync, writeFileSync } = require('node:fs');
+const { mkdirSync, mkdtempSync, writeFileSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join, resolve } = require('node:path');
 const { spawnSync } = require('node:child_process');
@@ -24,6 +24,16 @@ test('missing and blank selected files fail without falling back to production',
   const blank = list(blankFile, { BASE_URL: 'https://www.monis.rent/' });
   assert.notEqual(blank.status, 0);
   assert.match(blank.stderr, /BASE_URL is required/);
+});
+
+test('default environment file is portable under the home directory', () => {
+  const home = join(directory, 'home');
+  mkdirSync(join(home, '.monis-e2e'), { recursive: true });
+  writeFileSync(join(home, '.monis-e2e', '.env'), 'BASE_URL=https://default.example.test\n');
+  const result = list('', { HOME: home, TEST_USER_EMAIL: 'old@example.invalid' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /TARGET=https:\/\/default\.example\.test/);
+  assert.match(result.stdout, /USER=\(none\)/);
 });
 
 test('selected file controls the URL and does not inherit another account', () => {
