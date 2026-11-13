@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { mkdirSync, mkdtempSync, writeFileSync } = require('node:fs');
+const { copyFileSync, mkdirSync, mkdtempSync, symlinkSync, writeFileSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join, resolve } = require('node:path');
 const { spawnSync } = require('node:child_process');
@@ -26,11 +26,16 @@ test('missing and blank selected files fail without falling back to production',
   assert.match(blank.stderr, /BASE_URL is required/);
 });
 
-test('default environment file is portable under the home directory', () => {
-  const home = join(directory, 'home');
-  mkdirSync(join(home, '.monis-e2e'), { recursive: true });
-  writeFileSync(join(home, '.monis-e2e', '.env'), 'BASE_URL=https://default.example.test\n');
-  const result = list('', { HOME: home, TEST_USER_EMAIL: 'old@example.invalid' });
+test('default environment file comes from the project directory', () => {
+  const project = join(directory, 'project');
+  mkdirSync(project);
+  copyFileSync(resolve('playwright.config.ts'), join(project, 'playwright.config.ts'));
+  symlinkSync(resolve('node_modules'), join(project, 'node_modules'), 'dir');
+  symlinkSync(resolve('e2e'), join(project, 'e2e'), 'dir');
+  writeFileSync(join(project, '.env'), 'BASE_URL=https://default.example.test\n');
+  const result = spawnSync(cli, ['test', '--list', `--config=${join(project, 'playwright.config.ts')}`, `--reporter=${reporter}`], {
+    encoding: 'utf8', env: { ...process.env, MONIS_ENV_FILE: '', HOME: directory, TEST_USER_EMAIL: 'old@example.invalid' },
+  });
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /TARGET=https:\/\/default\.example\.test/);
   assert.match(result.stdout, /USER=\(none\)/);
@@ -43,6 +48,14 @@ test('selected file controls the URL and does not inherit another account', () =
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /TARGET=https:\/\/staging\.example\.test/);
   assert.match(result.stdout, /USER=\(none\)/);
+});
+
+test('selected environment supplies its own account', () => {
+  const selected = join(directory, 'account.env');
+  writeFileSync(selected, 'BASE_URL=https://staging.example.test\nTEST_USER_EMAIL=staging@example.invalid\n');
+  const result = list(selected, { TEST_USER_EMAIL: 'old@example.invalid' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /USER=staging@example\.invalid/);
 });
 
 test('invalid URLs and embedded credentials are rejected', () => {

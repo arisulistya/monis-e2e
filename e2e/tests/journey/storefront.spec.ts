@@ -1,5 +1,5 @@
 import { reportIncomplete } from '../../reporting';
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../fixtures/staging.fixture';
 import { StorefrontPage } from '../../pages/storefront.page';
 
 const chair = 'Ergonomic Office Chair';
