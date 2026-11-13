@@ -1,3 +1,4 @@
+import { places } from '../../data/delivery-address';
 import { test, expect } from '../../fixtures/delivery-address.fixture';
 import { reportIncomplete } from '../../reporting';
 
@@ -11,8 +12,8 @@ test('MI-805-TC-10 changes the location of a new address', {
     await deliveryAddress.addAddress.click();
     await expect(deliveryAddress.search).toBeVisible({ timeout: 15_000 });
     await deliveryAddress.waitForPlaceSearch();
-    await deliveryAddress.search.fill('Seminyak');
-    await deliveryAddress.searchResult(/Seminyak Village.*Bali/).click();
+    await deliveryAddress.search.fill(places.seminyak.query);
+    await deliveryAddress.searchResult(places.seminyak.result).click();
   });
   await test.step('Check 1: Address Details shows the original location', async () => {
     await expect(page.getByRole('heading', { name: 'Seminyak Village', exact: true })).toBeVisible();
@@ -47,8 +48,8 @@ for (const scenario of [
       await deliveryAddress.addAddress.click();
       await expect(deliveryAddress.search).toBeVisible();
       await deliveryAddress.waitForPlaceSearch();
-      await deliveryAddress.search.fill('Seminyak');
-      await deliveryAddress.searchResult(/Seminyak Village.*Bali/).click();
+      await deliveryAddress.search.fill(places.seminyak.query);
+      await deliveryAddress.searchResult(places.seminyak.result).click();
     });
     await test.step('Action: choose the delivery preference and save', async () => {
       await page.getByRole('radio', { name: scenario.preference, exact: true }).check();

@@ -7,7 +7,7 @@ const { spawnSync } = require('node:child_process');
 
 const directory = mkdtempSync(join(tmpdir(), 'monis-env-check-'));
 const reporter = join(directory, 'reporter.cjs');
-writeFileSync(reporter, `module.exports = class { onBegin(config) { console.log('TARGET=' + config.projects[0].use.baseURL); console.log('USER=' + (process.env.TEST_USER_EMAIL || '(none)')); } };`);
+writeFileSync(reporter, `module.exports = class { onBegin(config) { console.log('TARGET=' + config.projects[0].use.baseURL); console.log('USER=' + (process.env.TEST_USER_EMAIL || '(none)')); console.log('API=' + (process.env.MONIS_API_URL || '(none)')); } };`);
 const cli = resolve('node_modules/.bin/playwright');
 function list(file, extra = {}) {
   return spawnSync(cli, ['test', '--list', `--reporter=${reporter}`], {
@@ -56,6 +56,19 @@ test('selected environment supplies its own account', () => {
   const result = list(selected, { TEST_USER_EMAIL: 'old@example.invalid' });
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /USER=staging@example\.invalid/);
+});
+
+test('API origins come only from the selected environment file', () => {
+  const selected = join(directory, 'api.env');
+  writeFileSync(selected, 'BASE_URL=https://staging.example.test\nMONIS_API_URL=https://api.example.test\n');
+  const configured = list(selected, { MONIS_API_URL: 'https://inherited.example.test' });
+  assert.equal(configured.status, 0, configured.stderr);
+  assert.match(configured.stdout, /API=https:\/\/api\.example\.test/);
+  const noApi = join(directory, 'no-api.env');
+  writeFileSync(noApi, 'BASE_URL=https://staging.example.test\n');
+  const absent = list(noApi, { MONIS_API_URL: 'https://inherited.example.test' });
+  assert.equal(absent.status, 0, absent.stderr);
+  assert.match(absent.stdout, /API=\(none\)/);
 });
 
 test('invalid URLs and embedded credentials are rejected', () => {

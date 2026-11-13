@@ -1,3 +1,4 @@
+import { places } from '../../data/delivery-address';
 import { test, expect } from '../../fixtures/delivery-address.fixture';
 import { reportIncomplete } from '../../reporting';
 
@@ -6,17 +7,17 @@ test.setTimeout(120_000);
 
 test('MI-805-TC-06 adds a new Bali address', {
   annotation: { type: 'description', description: 'Expected: Seminyak Village is saved and appears in the Bali delivery address list.' },
-}, async ({ addressLabels, deliveryAddress, page }) => {
+}, async ({ apiAddressLabel, deliveryAddress, page }) => {
   await test.step('Action: search for a Bali place', async () => {
     await expect(page.getByRole('button', { name: 'Location Bali' })).toBeVisible();
     await deliveryAddress.addAddress.click();
     await expect(deliveryAddress.search).toBeVisible({ timeout: 15_000 });
     await deliveryAddress.waitForPlaceSearch();
-    await deliveryAddress.search.fill('Seminyak');
-    await deliveryAddress.searchResult(/Seminyak Village.*Bali/).click();
+    await deliveryAddress.search.fill(places.seminyak.query);
+    await deliveryAddress.searchResult(places.seminyak.result).click();
     await expect(page.getByRole('heading', { name: 'Seminyak Village', exact: true })).toBeVisible();
   });
-  const label = addressLabels();
+  const label = apiAddressLabel;
   await test.step('Action: save the address', async () => {
     await deliveryAddress.room.fill(label);
     await deliveryAddress.saveAddress();
@@ -58,11 +59,11 @@ test('MI-805-TC-34 selects an existing saved address', {
 }, async ({ addressLabels, deliveryAddress, page }) => {
   const addressA = addressLabels();
   await test.step('Setup: create address A', async () => {
-    await deliveryAddress.addSavedAddress('Seminyak', /Seminyak Village.*Bali/, addressA);
+    await addressLabels.setup(places.seminyak.query, places.seminyak.result, addressA);
   });
   const addressB = addressLabels();
   await test.step('Setup: create address B', async () => {
-    await deliveryAddress.addSavedAddress('Kuta Beach', /^Kuta Beach Badung Regency, Bali, Indonesia$/, addressB);
+    await addressLabels.setup('Kuta Beach', /^Kuta Beach Badung Regency, Bali, Indonesia$/, addressB);
   });
   await test.step('Action: select address B and continue', async () => {
     await expect(deliveryAddress.savedAddress(addressA)).toBeVisible();

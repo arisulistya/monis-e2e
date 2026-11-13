@@ -67,7 +67,7 @@ monis-e2e/
 │   ├── fixtures/                  # Shared test setup
 │   ├── helpers/                   # Mailinator inbox helper
 │   ├── pages/                     # Page objects
-│   ├── test-data/                 # Validation values and account generation
+│   ├── data/                      # Shared non-sensitive test data
 │   ├── tests/auth/                # Authentication tests
 │   ├── tests/journey/             # Storefront tests
 │   ├── reporting.ts               # Incomplete-result attachment
@@ -105,6 +105,8 @@ MONIS_ENV_FILE=.env.staging npm run test:headed -- e2e/tests/delivery-address --
 ```
 
 The Chromium project runs at most one worker because delivery-address tests share a staging cart. Headed and debug commands also use one worker.
+
+Delivery-address catalog prerequisites and shared place searches live in `e2e/data/delivery-address.ts`. Update the market products when staging inventory changes; keep the selected cities and places consistent with the scenarios and their assertions. Storefront journey product expectations remain in their specs because those tests verify specific catalog content. API paths, UI labels, and timeouts are test contracts or execution choices, not environment settings.
 
 To run a specific file or select tests by title:
 
@@ -147,7 +149,7 @@ if [ ! -e .env.staging ]; then
 fi
 ```
 
-Edit `.env.staging` and set `BASE_URL` to the staging URL and `STAGING_GATE_PASSWORD` to the staging access password. Use staging-specific accounts. Credentials are not supplied in this repository.
+Edit `.env.staging` and set `BASE_URL`, `MONIS_ENVIRONMENT=staging`, `MONIS_API_URL`, `MONIS_STRAPI_URL`, and `STAGING_GATE_PASSWORD`. Use staging-specific accounts. Delivery-address tests accept only HTTPS staging origins on `monis.rent`; they cannot run against production. Credentials are not supplied in this repository.
 
 ```sh
 # Production: default environment file
@@ -166,6 +168,8 @@ The selected file must exist and contain a valid `BASE_URL`. The run fails when 
 | Variable | Purpose |
 | --- | --- |
 | `BASE_URL` | Required target URL in the selected environment file. |
+| `MONIS_ENVIRONMENT` | Set to `staging` for delivery-address tests. |
+| `MONIS_API_URL`, `MONIS_STRAPI_URL` | API origins for delivery-address tests, read from the selected environment file. |
 | `STAGING_GATE_PASSWORD` | Required for the staging site's password prompt; keep it in the private staging environment file. |
 | `TEST_USER_EMAIL`, `TEST_USER_PASSWORD` | Dedicated existing Monis account for password login and logout. |
 | `NEGATIVE_TEST_USER_EMAIL`, `NEGATIVE_TEST_USER_PASSWORD` | Optional separate account for the invalid-password test. |

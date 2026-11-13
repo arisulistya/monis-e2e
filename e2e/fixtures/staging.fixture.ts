@@ -1,15 +1,14 @@
 import { test as base, expect } from '@playwright/test';
 import { setTimeout as delay } from 'node:timers/promises';
 
-const stagingOrigin = 'https://staging.my.monis.rent';
-
 export const test = base.extend({
   page: async ({ page, baseURL }, use) => {
-    if (baseURL && new URL(baseURL).origin === stagingOrigin) {
+    const target = baseURL ? new URL(baseURL) : undefined;
+    if (target?.protocol === 'https:' && target.hostname.startsWith('staging.') && target.hostname.endsWith('.monis.rent')) {
       const password = process.env.STAGING_GATE_PASSWORD;
       if (!password) throw new Error('STAGING_GATE_PASSWORD is required for the staging environment.');
       page.on('dialog', async dialog => {
-        const isStaging = dialog.page()?.url().startsWith(`${stagingOrigin}/`) ?? false;
+        const isStaging = dialog.page()?.url().startsWith(`${target.origin}/`) ?? false;
         if (isStaging && dialog.type() === 'prompt' && dialog.message() === 'Password') {
           await dialog.accept(password);
         } else {

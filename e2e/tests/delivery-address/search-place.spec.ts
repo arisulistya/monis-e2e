@@ -1,3 +1,4 @@
+import { places } from '../../data/delivery-address';
 import { test, expect } from '../../fixtures/delivery-address.fixture';
 import { reportIncomplete } from '../../reporting';
 
@@ -16,9 +17,9 @@ test('MI-805-TC-04 searches for a delivery location', {
   await test.step('Setup: wait for place search to load', async () => {
     await deliveryAddress.waitForPlaceSearch();
   });
-  const result = deliveryAddress.searchResult(/Seminyak Village.*Bali/);
+  const result = deliveryAddress.searchResult(places.seminyak.result);
   await test.step('Action: search for Seminyak and select Seminyak Village', async () => {
-    await deliveryAddress.search.fill('Seminyak');
+    await deliveryAddress.search.fill(places.seminyak.query);
     await expect(result).toBeVisible();
     await result.click();
   });

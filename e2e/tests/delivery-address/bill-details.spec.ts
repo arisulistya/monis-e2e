@@ -1,3 +1,4 @@
+import { places } from '../../data/delivery-address';
 import { test, expect } from '../../fixtures/delivery-address.fixture';
 import { reportIncomplete } from '../../reporting';
 
@@ -9,11 +10,11 @@ test('MI-805-TC-39 changes the address with Monis driver', {
 }, async ({ addressLabels, deliveryAddress, page }) => {
   const addressA = addressLabels();
   await test.step('Setup: create address A', async () => {
-    await deliveryAddress.addSavedAddress('Seminyak', /Seminyak Village.*Bali/, addressA);
+    await addressLabels.setup(places.seminyak.query, places.seminyak.result, addressA);
   });
   const addressB = addressLabels();
   await test.step('Setup: create address B', async () => {
-    await deliveryAddress.addSavedAddress('Kuta Beach', /^Kuta Beach Badung Regency, Bali, Indonesia$/, addressB);
+    await addressLabels.setup('Kuta Beach', /^Kuta Beach Badung Regency, Bali, Indonesia$/, addressB);
   });
   await test.step('Action: select address A and Monis delivery', async () => {
     await deliveryAddress.savedAddress(addressA).click();
@@ -40,11 +41,11 @@ test.describe('Instant Delivery', () => {
   }, async ({ addressLabels, deliveryAddress, page }) => {
     const addressA = addressLabels();
     await test.step('Setup: create address A', async () => {
-      await deliveryAddress.addSavedAddress('Seminyak', /Seminyak Village.*Bali/, addressA);
+      await addressLabels.setup(places.seminyak.query, places.seminyak.result, addressA);
     });
     const addressB = addressLabels();
     await test.step('Setup: create address B', async () => {
-      await deliveryAddress.addSavedAddress('Kuta Beach', /^Kuta Beach Badung Regency, Bali, Indonesia$/, addressB);
+      await addressLabels.setup('Kuta Beach', /^Kuta Beach Badung Regency, Bali, Indonesia$/, addressB);
     });
     await test.step('Action: select address A and Instant Delivery', async () => {
       await deliveryAddress.savedAddress(addressA).click();
