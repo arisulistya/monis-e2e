@@ -1,13 +1,13 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { mkdirSync, mkdtempSync, writeFileSync } = require('node:fs');
+const { copyFileSync, mkdirSync, mkdtempSync, symlinkSync, writeFileSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join, resolve } = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const directory = mkdtempSync(join(tmpdir(), 'monis-env-check-'));
 const reporter = join(directory, 'reporter.cjs');
-writeFileSync(reporter, `module.exports = class { onBegin(config) { console.log('TARGET=' + config.projects[0].use.baseURL); console.log('USER=' + (process.env.TEST_USER_EMAIL || '(none)')); } };`);
+writeFileSync(reporter, `module.exports = class { onBegin(config) { console.log('TARGET=' + config.projects[0].use.baseURL); console.log('USER=' + (process.env.TEST_USER_EMAIL || '(none)')); console.log('API=' + (process.env.MONIS_API_URL || '(none)')); } };`);
 const cli = resolve('node_modules/.bin/playwright');
 function list(file, extra = {}) {
   return spawnSync(cli, ['test', '--list', `--reporter=${reporter}`], {
@@ -26,11 +26,16 @@ test('missing and blank selected files fail without falling back to production',
   assert.match(blank.stderr, /BASE_URL is required/);
 });
 
-test('default environment file is portable under the home directory', () => {
-  const home = join(directory, 'home');
-  mkdirSync(join(home, '.monis-e2e'), { recursive: true });
-  writeFileSync(join(home, '.monis-e2e', '.env'), 'BASE_URL=https://default.example.test\n');
-  const result = list('', { HOME: home, TEST_USER_EMAIL: 'old@example.invalid' });
+test('default environment file comes from the project directory', () => {
+  const project = join(directory, 'project');
+  mkdirSync(project);
+  copyFileSync(resolve('playwright.config.ts'), join(project, 'playwright.config.ts'));
+  symlinkSync(resolve('node_modules'), join(project, 'node_modules'), 'dir');
+  symlinkSync(resolve('e2e'), join(project, 'e2e'), 'dir');
+  writeFileSync(join(project, '.env'), 'BASE_URL=https://default.example.test\n');
+  const result = spawnSync(cli, ['test', '--list', `--config=${join(project, 'playwright.config.ts')}`, `--reporter=${reporter}`], {
+    encoding: 'utf8', env: { ...process.env, MONIS_ENV_FILE: '', HOME: directory, TEST_USER_EMAIL: 'old@example.invalid' },
+  });
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /TARGET=https:\/\/default\.example\.test/);
   assert.match(result.stdout, /USER=\(none\)/);
@@ -43,6 +48,27 @@ test('selected file controls the URL and does not inherit another account', () =
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /TARGET=https:\/\/staging\.example\.test/);
   assert.match(result.stdout, /USER=\(none\)/);
+});
+
+test('selected environment supplies its own account', () => {
+  const selected = join(directory, 'account.env');
+  writeFileSync(selected, 'BASE_URL=https://staging.example.test\nTEST_USER_EMAIL=staging@example.invalid\n');
+  const result = list(selected, { TEST_USER_EMAIL: 'old@example.invalid' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /USER=staging@example\.invalid/);
+});
+
+test('API origins come only from the selected environment file', () => {
+  const selected = join(directory, 'api.env');
+  writeFileSync(selected, 'BASE_URL=https://staging.example.test\nMONIS_API_URL=https://api.example.test\n');
+  const configured = list(selected, { MONIS_API_URL: 'https://inherited.example.test' });
+  assert.equal(configured.status, 0, configured.stderr);
+  assert.match(configured.stdout, /API=https:\/\/api\.example\.test/);
+  const noApi = join(directory, 'no-api.env');
+  writeFileSync(noApi, 'BASE_URL=https://staging.example.test\n');
+  const absent = list(noApi, { MONIS_API_URL: 'https://inherited.example.test' });
+  assert.equal(absent.status, 0, absent.stderr);
+  assert.match(absent.stdout, /API=\(none\)/);
 });
 
 test('invalid URLs and embedded credentials are rejected', () => {

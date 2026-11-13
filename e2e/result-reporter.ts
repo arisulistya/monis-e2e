@@ -8,7 +8,9 @@ export default class ResultReporter implements Reporter {
   onTestEnd(test: TestCase, result: TestResult) {
     if (result.status !== 'skipped' && result.status !== 'failed' && result.status !== 'timedOut' && result.status !== 'interrupted') return;
     const reason = result.status === 'skipped'
-      ? result.annotations.find(annotation => annotation.type === 'skip')?.description || 'Skipped without a reason.'
+      ? result.annotations.find(annotation => annotation.type === 'blocker')?.description
+        || result.annotations.find(annotation => annotation.type === 'skip' || annotation.type === 'fixme')?.description
+        || 'Skipped without a reason.'
       : result.error?.message?.replace(/\u001b\[[0-9;]*m/g, '').split('\n').find(line => line.trim()) || 'See the Allure report for details.';
     const safeReason = reason.replace(/[^\s]+@[^\s]+/g, '[email]');
     this.issues.push(`${result.status.toUpperCase()}: ${test.title}\n  ${safeReason}`);

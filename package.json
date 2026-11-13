@@ -16,7 +16,8 @@
     "test:weekly": "node scripts/run.mjs test --test-list=plans/weekly/current.txt",
     "test:regression": "node scripts/run.mjs regression",
     "test:plan-check": "node scripts/check-plan.mjs",
-    "test:plan-selfcheck": "node --test checks/test-plan.test.cjs"
+    "test:plan-selfcheck": "node --test checks/test-plan.test.cjs",
+    "test:staging-gate": "playwright test --config=checks/staging-gate.config.ts"
   },
   "keywords": [],
   "author": "",

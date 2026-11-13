@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect } from './staging.fixture';
 import { AuthPage } from '../pages/auth.page';
 
 type Fixtures = { auth: AuthPage };

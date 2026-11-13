@@ -1,0 +1,16 @@
+# Implemented highest-priority MI-805 cases. Test outcomes are reported by Playwright.
+delivery-address/delivery-address.spec.ts > MI-805-TC-01 adds an address using current location
+delivery-address/search-place.spec.ts > MI-805-TC-02 selects a delivery location on the map
+delivery-address/search-place.spec.ts > MI-805-TC-04 searches for a delivery location
+delivery-address/search-place.spec.ts > MI-805-TC-05 selects a place using current location
+delivery-address/delivery-address.spec.ts > MI-805-TC-06 adds a new Bali address
+delivery-address/other-markets.spec.ts > Chiang Mai delivery address > MI-805-TC-07 adds an address in Chiang Mai
+delivery-address/other-markets.spec.ts > Lisbon delivery address > MI-805-TC-08 adds an address in Lisbon
+delivery-address/address-details.spec.ts > MI-805-TC-10 changes the location of a new address
+delivery-address/address-details.spec.ts > MI-805-TC-13 saves Bring it inside with empty notes
+delivery-address/address-details.spec.ts > MI-805-TC-15 saves Leave it in save place with empty notes
+delivery-address/address-details.spec.ts > MI-805-TC-16 saves Leave at reception with empty notes
+delivery-address/delivery-address.spec.ts > MI-805-TC-34 selects an existing saved address
+delivery-address/bill-details.spec.ts > MI-805-TC-39 changes the address with Monis driver
+delivery-address/bill-details.spec.ts > Instant Delivery > MI-805-TC-40 changes the address with Gojek Instant
+delivery-address/other-markets.spec.ts > Location group filtering > MI-805-TC-50 filters saved addresses by booking location group

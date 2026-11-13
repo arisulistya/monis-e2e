@@ -5,8 +5,11 @@ import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { checkPlan } from './check-plan.mjs';
 
-const [mode, ...extra] = process.argv.slice(2);
+const [mode, ...options] = process.argv.slice(2);
 if (!['test', 'regression', 'headed', 'debug'].includes(mode)) throw new Error('Expected test, regression, headed, or debug mode');
+const keepOpen = options.includes('--keep-open');
+if (keepOpen && !['headed', 'debug'].includes(mode)) throw new Error('--keep-open requires test:headed or test:debug.');
+const extra = options.filter(option => option !== '--keep-open');
 const listOptions = extra.flatMap((arg, index) => arg === '--test-list' ? [extra[index + 1]] : arg.startsWith('--test-list=') ? [arg.slice('--test-list='.length)] : []);
 if (listOptions.length > 1 || listOptions.some(value => !value || value.startsWith('--'))) throw new Error('Provide one test-list file.');
 if (listOptions.length) {
@@ -26,7 +29,7 @@ const report = join(run, 'report');
 await mkdir(results, { recursive: true });
 const cli = resolve('node_modules', '.bin', 'playwright');
 const args = ['test', ...(mode === 'debug' ? ['--debug', '--workers=1'] : mode === 'headed' ? ['--headed', '--workers=1'] : []), ...extra];
-const test = spawnSync(cli, args, { stdio: 'inherit', env: { ...process.env, ALLURE_RESULTS_DIR: results, MONIS_HEADED: mode === 'headed' || mode === 'debug' ? '1' : '0', MONIS_TEST_PLAN: listOptions[0] || (mode === 'regression' ? 'Regression (full suite)' : '') } });
+const test = spawnSync(cli, args, { stdio: 'inherit', env: { ...process.env, ALLURE_RESULTS_DIR: results, MONIS_HEADED: mode === 'headed' || mode === 'debug' ? '1' : '0', MONIS_KEEP_OPEN: keepOpen ? '1' : '0', MONIS_TEST_PLAN: listOptions[0] || (mode === 'regression' ? 'Regression (full suite)' : '') } });
 if (test.error) throw test.error;
 const allure = spawnSync(resolve('node_modules', '.bin', 'allure'), ['generate', results, '-o', report], { stdio: 'inherit' });
 if (allure.error) throw allure.error;

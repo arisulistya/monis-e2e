@@ -1,7 +1,7 @@
 import { reportIncomplete } from '../../reporting';
 import { test, expect } from '../../fixtures/auth.fixture';
-import { authData } from '../../test-data/auth.data';
-import { newSignupAccount } from '../../test-data/signup';
+import { authData } from '../../data/auth.data';
+import { newSignupAccount } from '../../data/signup';
 
 const email = process.env.TEST_USER_EMAIL;
 const password = process.env.TEST_USER_PASSWORD;
